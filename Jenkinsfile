@@ -32,11 +32,11 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        sh """
+                        sh '''
                         docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                        """
+                        '''
                     }
                 }
             }
@@ -53,7 +53,7 @@ pipeline {
                         usernameVariable: 'GIT_USERNAME',
                         passwordVariable: 'GIT_TOKEN'
                     )]) {
-                        sh """
+                        sh '''
                         set -e
                         git config user.name "${GIT_USER}"
                         git config user.email "${GIT_EMAIL}"
@@ -61,18 +61,19 @@ pipeline {
                         git checkout main
                         git reset --hard origin/main
 
-                        sed -i 's|image:.*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' k8s/deployment.yml
+                        sed -i 's|image:.*|image: '"${IMAGE_NAME}:${IMAGE_TAG}"'|' k8s/deployment.yml
 
                         git add k8s/deployment.yml
                         git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes to commit"
 
-                        git push https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/apurba08/Multi-Branch-Prod.git main
-                        """
+                        git push origin main
+                        '''
                     }
                 }
             }
         }
     }
 }
+
 
                                 
