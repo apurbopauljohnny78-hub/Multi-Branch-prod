@@ -33,6 +33,7 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
                         sh '''
+                        set -e
                         docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${IMAGE_NAME}:${IMAGE_TAG}
@@ -55,6 +56,7 @@ pipeline {
                     )]) {
                         sh '''
                         set -e
+
                         git config user.name "${GIT_USER}"
                         git config user.email "${GIT_EMAIL}"
 
@@ -66,6 +68,9 @@ pipeline {
                         git add k8s/deployment.yml
                         git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes to commit"
 
+                        # 🔐 Inject credentials into origin
+                        git remote set-url origin https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/apurbopauljohnny78-hub/Multi-Branch-prod.git
+
                         git push origin main
                         '''
                     }
@@ -74,6 +79,7 @@ pipeline {
         }
     }
 }
+
 
 
                                 
